@@ -1,28 +1,182 @@
 <template>
   <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+    <div class="container">
+      <h1 class="title">Rav Lamp App</h1>
+      <div class="color-select">
+        <div
+          class="color-box"
+          :style="'background-color: ' + currentColor"
+        ></div>
+        <div
+          v-for="(color, index) in colors"
+          :key="index"
+          :class="'color-slide-container ' + color.toLowerCase()"
+        >
+          <b-field :label="color">
+            <b-slider
+              size="is-large"
+              :disabled="
+                currentMode != null
+                  ? currentMode.id != 3 && currentMode.id != 1
+                  : false
+              "
+              @change="valueUpdate"
+              :max="255"
+              :type="colorMap[color.toLowerCase()]"
+              lazy
+              v-model="colorData[color.toLowerCase()]"
+            ></b-slider>
+          </b-field>
+        </div>
+      </div>
+      <div class="anim-select">
+        <b-dropdown
+          v-model="currentMode"
+          aria-role="list"
+          position="is-top-right"
+          @change="valueUpdate"
+        >
+          <template #trigger>
+            <b-button label="Choose Animation" type="is-primary" />
+          </template>
+
+          <b-dropdown-item
+            v-for="(mode, index) in modeEnum"
+            :key="index"
+            :value="mode"
+            >{{ mode.name }}</b-dropdown-item
+          >
+        </b-dropdown>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
-
 export default {
-  name: 'App',
-  components: {
-    HelloWorld
-  }
-}
+  name: "App",
+  components: {},
+  data() {
+    return {
+      colors: ["Red", "Green", "Blue", "Brightness"],
+      colorData: {
+        red: 0,
+        green: 0,
+        blue: 0,
+        brightness: 0,
+      },
+      colorMap: {
+        red: "is-danger",
+        green: "is-success",
+        blue: "is-info",
+        brightness: "is-primary",
+      },
+      modeEnum: {
+        white: {
+          id: 0,
+          name: "White",
+        },
+        breathing: {
+          id: 1,
+          name: "Breathing",
+        },
+        rainbow: {
+          id: 2,
+          name: "Rainbow",
+        },
+        solid: {
+          id: 3,
+          name: "Solid Color",
+        },
+        off: {
+          id: 4,
+          name: "Off",
+        },
+      },
+      currentMode: null,
+    };
+  },
+  computed: {
+    currentColor() {
+      return this.rgbToHex(
+        this.colorData.red,
+        this.colorData.green,
+        this.colorData.blue
+      );
+    },
+  },
+  methods: {
+    rgbToHex(r, g, b) {
+      return (
+        "#" +
+        this.componentToHex(r) +
+        this.componentToHex(g) +
+        this.componentToHex(b)
+      );
+    },
+    componentToHex(c) {
+      var hex = c.toString(16);
+      return hex.length == 1 ? "0" + hex : hex;
+    },
+    async valueUpdate() {
+      const data = {
+        r: this.colorData.red,
+        g: this.colorData.green,
+        b: this.colorData.blue,
+        bright: this.colorData.brightness,
+        mode: this.currentMode == null ? 3 : this.currentMode.id,
+      };
+      try {
+        console.log('sending data');
+        const res = await fetch("http://192.168.1.1/update", {
+          method: "POST",
+          headers: {
+            "Content-Type": "appliaction/json",
+          },
+          body: JSON.stringify(data),
+        });
+      } catch (error) {
+        console.log(error);
+        this.$buefy.toast.open({
+          duration: 3000,
+          message: "Oops, Something Went Wrong",
+          type: 'is-danger'
+        });
+      }
+    },
+  },
+};
 </script>
 
 <style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+* {
+  box-sizing: border-box;
+  /* border: 1px black dashed; */
+}
+.container {
+  padding: 5%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+}
+.color-select {
+  grid-template-rows: 1fr 1fr;
+}
+.title {
+  grid-row: 1;
   text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+}
+.color-box {
+  grid-row: 1;
+  min-height: 100px;
+  margin: auto;
+  margin-bottom: 15px;
+}
+.color-slide-container {
+  grid-row: 2;
+}
+.anim-select {
+  /* grid-row: 2; */
+  margin-top: 20px;
 }
 </style>
