@@ -16,9 +16,7 @@
             <b-slider
               size="is-large"
               :disabled="
-                currentMode != null
-                  ? currentMode.id != 3 && currentMode.id != 1
-                  : false
+                index != 3 ? currentMode.id != 3 && currentMode.id != 1 : false
               "
               @change="valueUpdate"
               :max="255"
@@ -93,7 +91,10 @@ export default {
           name: "Off",
         },
       },
-      currentMode: null,
+      currentMode: {
+        id: 3,
+        name: "Solid Color",
+      },
     };
   },
   computed: {
@@ -119,30 +120,33 @@ export default {
       return hex.length == 1 ? "0" + hex : hex;
     },
     async valueUpdate() {
-      const data = {
-        r: this.colorData.red,
-        g: this.colorData.green,
-        b: this.colorData.blue,
-        bright: this.colorData.brightness,
-        mode: this.currentMode == null ? 3 : this.currentMode.id,
-      };
-      try {
-        console.log('sending data');
-        const res = await fetch("http://192.168.1.1/update", {
-          method: "POST",
-          headers: {
-            "Content-Type": "appliaction/json",
-          },
-          body: JSON.stringify(data),
-        });
-      } catch (error) {
-        console.log(error);
-        this.$buefy.toast.open({
-          duration: 3000,
-          message: "Oops, Something Went Wrong",
-          type: 'is-danger'
-        });
-      }
+      this.$nextTick(async () => {
+        const data = {
+          r: this.colorData.red,
+          g: this.colorData.green,
+          b: this.colorData.blue,
+          bright: this.colorData.brightness,
+          mode: this.currentMode.id,
+        };
+        try {
+          console.log("sending data", data);
+          const res = await fetch("http://192.168.1.1/update", {
+            method: "POST",
+            mode: "no-cors",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(data),
+          });
+        } catch (error) {
+          console.log(error);
+          this.$buefy.toast.open({
+            duration: 3000,
+            message: "Oops, Something Went Wrong",
+            type: "is-danger",
+          });
+        }
+      });
     },
   },
 };
