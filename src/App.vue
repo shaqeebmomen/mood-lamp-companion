@@ -130,7 +130,7 @@ export default {
         };
         try {
           console.log("sending data", data);
-          const res = await fetch("http://192.168.1.1/update", {
+          const res = await fetch("/update", {
             method: "POST",
             mode: "no-cors",
             headers: {
