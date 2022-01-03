@@ -1,7 +1,11 @@
 <template>
   <div id="app">
-    <div class="container">
-      <h1 class="title">Rav Lamp App</h1>
+    <section class="hero is-primary">
+      <div class="hero-body">
+        <p class="title">Rav Lamp App</p>
+      </div>
+    </section>
+    <div class="container mt-6">
       <div class="color-select">
         <div
           class="color-box"
@@ -35,7 +39,11 @@
           @change="valueUpdate"
         >
           <template #trigger>
-            <b-button label="Choose Animation" type="is-primary" />
+            <b-button
+              :label="currentMode.name"
+              type="is-primary"
+              class="is-outlined"
+            />
           </template>
 
           <b-dropdown-item
@@ -54,6 +62,15 @@
 export default {
   name: "App",
   components: {},
+  async created() {
+    // Get current saved state from lamp
+    const currentState = await (await fetch("/getcurrent")).json();
+    this.colorData.red = currentState.r;
+    this.colorData.green = currentState.g;
+    this.colorData.blue = currentState.b;
+    this.colorData.brightness = currentState.bright;
+    this.currentMode = this.modeEnum.find((mode) => mode.id == currentState.mode);
+  },
   data() {
     return {
       colors: ["Red", "Green", "Blue", "Brightness"],
@@ -69,28 +86,28 @@ export default {
         blue: "is-info",
         brightness: "is-primary",
       },
-      modeEnum: {
-        white: {
+      modeEnum: [
+        {
           id: 0,
           name: "White",
         },
-        breathing: {
+        {
           id: 1,
           name: "Breathing",
         },
-        rainbow: {
+        {
           id: 2,
           name: "Rainbow",
         },
-        solid: {
+        {
           id: 3,
           name: "Solid Color",
         },
-        off: {
+        {
           id: 4,
           name: "Off",
         },
-      },
+      ],
       currentMode: {
         id: 3,
         name: "Solid Color",
@@ -158,7 +175,7 @@ export default {
   /* border: 1px black dashed; */
 }
 .container {
-  padding: 5%;
+  padding: 0% 5% 0% 5%;
   display: flex;
   flex-direction: column;
   justify-content: space-evenly;
@@ -175,6 +192,7 @@ export default {
   min-height: 100px;
   margin: auto;
   margin-bottom: 15px;
+  border: 1px black solid;
 }
 .color-slide-container {
   grid-row: 2;
@@ -182,5 +200,8 @@ export default {
 .anim-select {
   /* grid-row: 2; */
   margin-top: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 </style>

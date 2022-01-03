@@ -1,4 +1,7 @@
+#command to run (in debian wsl): bash create_gz.sh
+
 #!%SYSTEMROOT%\Windows\System32\bash.exe
+#!/bin/bash
 outputSize=0
 #function defs
 create_GZIPs () {
